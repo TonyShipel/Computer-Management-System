@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление пользователями</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        .user-actions {
+            white-space: nowrap;
+        }
+        .role-badge {
+            font-size: 0.8em;
+        }
+        .table-responsive {
+            margin-top: 20px;
+        }
+        .status-active {
+            color: #198754;
+        }
+        .status-inactive {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-home"></i>
+            </a>
+            <div class="navbar-text text-white">
+                <i class="fas fa-user"></i> {{ current_user.username }}
+                {% if current_user.role == 'admin' %}
+                <span class="badge bg-danger">Администратор</span>
+                {% endif %}
+            </div>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm ms-2">
+                <i class="fas fa-sign-out-alt"></i> Выйти
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2><i class="fas fa-users"></i> Управление пользователями</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show mt-3">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Список пользователей</h5>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="fas fa-user-plus"></i> Добавить пользователя
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Имя пользователя</th>
+                                <th>Роль</th>
+                                <th>Статус</th>
+                                <th>Последний вход</th>
+                                <th>Дата регистрации</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>
+                                    <span class="badge {% if user.role == 'admin' %}bg-danger{% else %}bg-primary{% endif %}">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <i class="fas fa-circle {% if user.is_active %}status-active{% else %}status-inactive{% endif %}"></i>
+                                    {{ 'Активен' if user.is_active else 'Неактивен' }}
+                                </td>
+                                <td>{{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else 'Никогда' }}</td>
+                                <td>{{ user.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td class="user-actions">
+                                    <button class="btn btn-sm btn-primary edit-user" data-bs-toggle="modal" 
+                                            data-bs-target="#editUserModal" data-user-id="{{ user.id }}"
+                                            data-username="{{ user.username }}" data-role="{{ user.role }}"
+                                            data-is-active="{{ user.is_active|int }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    {% if user.id != current_user.id %}
+                                    <button class="btn btn-sm btn-danger delete-user" data-bs-toggle="modal"
+                                            data-bs-target="#deleteUserModal" data-user-id="{{ user.id }}"
+                                            data-username="{{ user.username }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Добавить пользователя</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('add_user') }}" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="new_username" class="form-label">Имя пользователя</label>
+                            <input type="text" class="form-control" id="new_username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">Пароль</label>
+                            <input type="password" class="form-control" id="new_password" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_role" class="form-label">Роль</label>
+                            <select class="form-select" id="new_role" name="role" required>
+                                <option value="user">Пользователь</option>
+                                <option value="admin">Администратор</option>
+                            </select>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="new_is_active" name="is_active" checked>
+                            <label class="form-check-label" for="new_is_active">Активен</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редактировать пользователя</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('edit_user') }}" method="POST">
+                    <input type="hidden" name="user_id" id="edit_user_id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="edit_username" class="form-label">Имя пользователя</label>
+                            <input type="text" class="form-control" id="edit_username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_password" class="form-label">Новый пароль (оставьте пустым, чтобы не менять)</label>
+                            <input type="password" class="form-control" id="edit_password" name="password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_role" class="form-label">Роль</label>
+                            <select class="form-select" id="edit_role" name="role" required>
+                                <option value="user">Пользователь</option>
+                                <option value="admin">Администратор</option>
+                            </select>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_is_active" name="is_active">
+                            <label class="form-check-label" for="edit_is_active">Активен</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Modal -->
+    <div class="modal fade" id="deleteUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Удалить пользователя</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('delete_user') }}" method="POST">
+                    <input type="hidden" name="user_id" id="delete_user_id">
+                    <div class="modal-body">
+                        <p>Вы действительно хотите удалить пользователя <strong id="delete_username"></strong>?</p>
+                        <p class="text-danger">Это действие нельзя отменить!</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-danger">Удалить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Edit user modal
+            document.querySelectorAll('.edit-user').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.dataset.userId;
+                    const username = this.dataset.username;
+                    const role = this.dataset.role;
+                    const isActive = this.dataset.isActive === '1';
+
+                    document.getElementById('edit_user_id').value = userId;
+                    document.getElementById('edit_username').value = username;
+                    document.getElementById('edit_role').value = role;
+                    document.getElementById('edit_is_active').checked = isActive;
+                });
+            });
+
+            // Delete user modal
+            document.querySelectorAll('.delete-user').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.dataset.userId;
+                    const username = this.dataset.username;
+
+                    document.getElementById('delete_user_id').value = userId;
+                    document.getElementById('delete_username').textContent = username;
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

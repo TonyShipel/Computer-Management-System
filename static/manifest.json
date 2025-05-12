@@ -1,0 +1,10 @@
+{
+    "name": "Computer Management System",
+    "short_name": "CMS",
+    "description": "Система управления компьютерами",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#007bff",
+    "orientation": "portrait-primary"
+} 

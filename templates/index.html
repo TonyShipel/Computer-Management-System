@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Management System</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="CMS">
+    <meta name="theme-color" content="#007bff">
+    <meta name="description" content="Computer Management System">
+    
+    <!-- PWA Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png">
+    <link rel="manifest" href="/static/manifest.json">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            max-width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .tab-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        .tab-pane {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .pixels-container {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 5px;
+        }
+
+        .pixels-container .row {
+            margin-right: 0;
+            margin-left: 0;
+            width: 100%;
+        }
+
+        .pixels-container .card {
+            height: 100%;
+        }
+
+        /* Стилизация скроллбара */
+        .pixels-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .pixels-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .pixels-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .pixels-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .nav-tabs {
+            background: #fff;
+            border-radius: 10px 10px 0 0;
+            padding: 10px 10px 0 10px;
+            margin-bottom: 0;
+            display: flex;
+            flex-wrap: nowrap;
+            width: 100%;
+            gap: 5px;
+        }
+
+        .nav-tabs .nav-item {
+            flex: 0 0 auto;
+        }
+
+        .nav-tabs .nav-item:not(.ms-auto) {
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .nav-tabs .nav-link {
+            padding: 10px;
+            border: 1px solid transparent;
+            border-radius: 5px 5px 0 0;
+            color: #6c757d;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 40px;
+        }
+
+        .nav-tabs .nav-link:hover {
+            border-color: #e9ecef #e9ecef #dee2e6;
+            color: #495057;
+            background-color: #f8f9fa;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #007bff;
+            border-color: #dee2e6 #dee2e6 #fff;
+            background-color: #fff;
+        }
+
+        .nav-tabs .nav-link i {
+            font-size: 1.2rem;
+        }
+
+        .nav-tabs .ms-auto {
+            margin-left: auto !important;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box {
+            margin-bottom: 15px;
+        }
+
+        .computers-list {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 5px;
+        }
+
+        .computer-card {
+            margin-bottom: 15px;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-radius: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .computer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .computer-card .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .computer-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .computer-info-item {
+            background: #f8f9fa;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            color: #495057;
+        }
+
+        .computer-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .computer-actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Стилизация скроллбара для списка компьютеров */
+        .computers-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .computers-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .computers-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .computers-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 10px;
+            margin-bottom: 0;
+            max-width: 100%;
+            height: calc(100vh - 120px);
+            overflow: hidden;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scroll-behavior: smooth;
+            height: calc(100% - 70px);
+        }
+        
+        .message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+            margin: 5px 0;
+        }
+        
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .assistant-message {
+            background-color: #f1f1f1;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: #fff;
+            border-top: 1px solid #eee;
+            position: sticky;
+            bottom: 0;
+            min-height: 70px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .chat-input input[type="text"] {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+        
+        .chat-input button {
+            padding: 10px 20px;
+            border-radius: 20px;
+        }
+        
+        .image-upload {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .image-upload input[type="file"] {
+            display: none;
+        }
+        
+        .image-upload label {
+            cursor: pointer;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 50%;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+        
+        .message img {
+            max-width: 200px;
+            border-radius: 10px;
+            margin: 5px 0;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 5px 10px;
+            background: #f0f2f5;
+            border-radius: 10px;
+            width: fit-content;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #90949c;
+            border-radius: 50%;
+            animation: typing 1s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .add-computer-btn {
+            margin-bottom: 15px;
+        }
+        
+        #user-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: none;
+            min-height: 40px;
+            max-height: 100px;
+        }
+
+        .send-button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            align-self: flex-end;
+        }
+
+        .send-button:hover {
+            background-color: #0056b3;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .chat-input {
+                padding: 10px;
+            }
+
+            .computer-card {
+                margin-bottom: 10px;
+            }
+
+            .computer-card .card-title {
+                font-size: 1rem;
+            }
+
+            .computer-info {
+                font-size: 0.75rem;
+            }
+
+            .computer-info-item {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.75rem;
+            }
+
+            .computer-actions button {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.75rem;
+            }
+
+            .tab-content {
+                padding: 10px;
+            }
+
+            .search-box {
+                margin-bottom: 10px;
+            }
+
+            .add-computer-btn {
+                font-size: 0.875rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="subnet1-tab" data-bs-toggle="tab" data-bs-target="#subnet1" type="button" role="tab" title="192.186.0.x">
+                    <i class="fas fa-network-wired"></i>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="subnet2-tab" data-bs-toggle="tab" data-bs-target="#subnet2" type="button" role="tab" title="192.186.1.x">
+                    <i class="fas fa-network-wired"></i>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="gpt-tab" data-bs-toggle="tab" data-bs-target="#gpt" type="button" role="tab" title="GPT">
+                    <i class="fas fa-robot"></i>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pixels-tab" data-bs-toggle="tab" data-bs-target="#pixels" type="button" role="tab" title="Pixels">
+                    <i class="fas fa-image"></i>
+                </button>
+            </li>
+            <li class="nav-item ms-auto">
+                <div class="d-flex align-items-center">
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('manage_users') }}" class="btn btn-outline-primary btn-sm me-2" title="Управление пользователями">
+                        <i class="fas fa-users-cog"></i>
+                    </a>
+                    {% endif %}
+                    <span class="me-3">
+                        <i class="fas fa-user"></i>
+                        {% if current_user.role == 'admin' %}
+                        <span class="badge bg-danger">A</span>
+                        {% endif %}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm" title="Выйти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="subnet1" role="tabpanel">
+                <button class="btn btn-success add-computer-btn" onclick="showAddComputerModal('192.186.0.1')">
+                    <i class="fas fa-plus"></i> Добавить компьютер
+                </button>
+                <div class="search-box">
+                    <input type="text" class="form-control" placeholder="Поиск по IP, имени, кабинету..." data-subnet="192.186.0.1">
+                </div>
+                <div class="computers-list"></div>
+            </div>
+            
+            <div class="tab-pane fade" id="subnet2" role="tabpanel">
+                <button class="btn btn-success add-computer-btn" onclick="showAddComputerModal('192.186.1.1')">
+                    <i class="fas fa-plus"></i> Добавить компьютер
+                </button>
+                <div class="search-box">
+                    <input type="text" class="form-control" placeholder="Поиск по IP, имени, кабинету..." data-subnet="192.186.1.1">
+                </div>
+                <div class="computers-list"></div>
+            </div>
+            
+            <div class="tab-pane fade" id="gpt" role="tabpanel">
+                <div class="chat-container">
+                    <div class="chat-messages">
+                        <!-- Messages will be added here -->
+                    </div>
+                    <form id="chat-form" class="chat-input">
+                        <div class="image-upload">
+                            <label for="image-upload">
+                                <i class="fas fa-image"></i>
+                            </label>
+                            <input type="file" id="image-upload" accept="image/*">
+                        </div>
+                        <input type="text" id="user-input" placeholder="Введите сообщение..." class="form-control">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="pixels" role="tabpanel">
+                <div class="pixels-container">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Генерация изображения</h5>
+                                    <form id="image-gen-form" class="mb-3">
+                                        <div class="mb-3">
+                                            <label for="style" class="form-label">Стиль</label>
+                                            <select class="form-select" id="style">
+                                                <option value="KANDINSKY">Kandinsky</option>
+                                                <option value="UHD">UHD</option>
+                                                <option value="ANIME">Аниме</option>
+                                                <option value="PORTRAIT">Портрет</option>
+                                                <option value="LANDSCAPE">Пейзаж</option>
+                                                <option value="CYBERPUNK">Киберпанк</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="prompt" class="form-label">Опишите изображение</label>
+                                            <textarea class="form-control" id="prompt" rows="3" required 
+                                                placeholder="Например: космический корабль в стиле киберпанк, летящий сквозь неоновый город"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100" id="generate-btn">
+                                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                            <span class="btn-text">Сгенерировать</span>
+                                        </button>
+                                        <div class="form-text mt-2">
+                                            Генерация изображения может занять до 30 секунд. Пожалуйста, подождите.
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Результат</h5>
+                                    <div id="result-container" class="text-center">
+                                        <img id="generated-image" class="img-fluid d-none" alt="Сгенерированное изображение">
+                                        <div id="loading-placeholder" class="d-none">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Загрузка...</span>
+                                            </div>
+                                            <p class="mt-2">Генерация изображения...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for editing/adding computer -->
+    <div class="modal fade" id="computerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Компьютер</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="computerForm">
+                        <input type="hidden" id="computerId">
+                        <input type="hidden" id="computerSubnet">
+                        <div class="mb-3">
+                            <label for="computerName" class="form-label">Имя компьютера</label>
+                            <input type="text" class="form-control" id="computerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="computerIp" class="form-label">IP адрес</label>
+                            <input type="text" class="form-control" id="computerIp" list="ipList" required 
+                                   pattern="^192\.186\.[0-1]\.([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+                                   title="IP адрес должен быть в диапазоне 192.186.0.1-192.186.0.255 или 192.186.1.1-192.186.1.255">
+                            <datalist id="ipList"></datalist>
+                            <div class="form-text">Формат: 192.186.0.1-255 для Гоголь или 192.186.1.1-255 для Колымажный</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="computerOs" class="form-label">Операционная система</label>
+                            <select class="form-select" id="computerOs" required>
+                                <option value="">Выберите ОС</option>
+                                <option value="Windows 7">Windows 7</option>
+                                <option value="Windows 10">Windows 10</option>
+                                <option value="Astra Linux">Astra Linux</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="computerRoom" class="form-label">Кабинет</label>
+                            <input type="text" class="form-control" id="computerRoom" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="computerUser" class="form-label">Пользователь</label>
+                            <input type="text" class="form-control" id="computerUser" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" onclick="saveComputer()">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/pixels.js') }}"></script>
+    <script>
+        // Глобальные переменные
+        let computerModal;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация модального окна
+            computerModal = new bootstrap.Modal(document.getElementById('computerModal'));
+            
+            // Загрузка компьютеров при переключении вкладок
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(e) {
+                    const targetId = e.target.getAttribute('data-bs-target');
+                    if (targetId !== '#gpt' && targetId !== '#pixels') {
+                        const tabPane = document.querySelector(targetId);
+                        const searchInput = tabPane?.querySelector('.search-box input');
+                        if (searchInput && searchInput.dataset.subnet) {
+                            loadComputers(searchInput.dataset.subnet);
+                        }
+                    }
+                });
+            });
+            
+            // Настройка поиска
+            document.querySelectorAll('.search-box input').forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.dataset.subnet) {
+                        loadComputers(this.dataset.subnet, this.value);
+                    }
+                });
+            });
+            
+            // Загрузка начальных данных для активной вкладки
+            const activeTab = document.querySelector('.tab-pane.active');
+            if (activeTab) {
+                const searchInput = activeTab.querySelector('.search-box input');
+                if (searchInput && searchInput.dataset.subnet) {
+                    loadComputers(searchInput.dataset.subnet);
+                }
+            }
+        });
+
+        function loadComputers(subnet, search = '') {
+            fetch(`/api/computers?subnet=${subnet}&search=${search}`)
+                .then(response => response.json())
+                .then(computers => {
+                    const container = document.querySelector(`[data-subnet="${subnet}"]`)
+                        .closest('.tab-pane')
+                        .querySelector('.computers-list');
+                    
+                    container.innerHTML = computers.map(computer => `
+                        <div class="card computer-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="card-title">${computer.name}</h5>
+                                        <div class="computer-info">
+                                            <span class="computer-info-item">
+                                                <i class="fas fa-network-wired"></i> ${computer.ip_address}
+                                            </span>
+                                            <span class="computer-info-item">
+                                                <i class="fas fa-desktop"></i> ${computer.os}
+                                            </span>
+                                            <span class="computer-info-item">
+                                                <i class="fas fa-door-open"></i> ${computer.room}
+                                            </span>
+                                            <span class="computer-info-item">
+                                                <i class="fas fa-user"></i> ${computer.user}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="computer-actions">
+                                        <button class="btn btn-primary btn-sm" onclick="editComputer(${computer.id})" title="Редактировать">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteComputer(${computer.id}, '${subnet}')" title="Удалить">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function generateIpList(subnet) {
+            const ipList = document.getElementById('ipList');
+            ipList.innerHTML = '';
+            const subnetPart = subnet === '192.186.0.1' ? '0' : '1';
+            
+            for (let i = 1; i <= 255; i++) {
+                const option = document.createElement('option');
+                option.value = `192.186.${subnetPart}.${i}`;
+                ipList.appendChild(option);
+            }
+        }
+
+        function showAddComputerModal(subnet) {
+            document.getElementById('computerId').value = '';
+            document.getElementById('computerSubnet').value = subnet;
+            document.getElementById('computerName').value = '';
+            document.getElementById('computerIp').value = '';
+            document.getElementById('computerOs').value = '';
+            document.getElementById('computerRoom').value = '';
+            document.getElementById('computerUser').value = '';
+            
+            // Генерируем список IP адресов для автозаполнения
+            generateIpList(subnet);
+            
+            computerModal.show();
+        }
+
+        function editComputer(id) {
+            fetch(`/api/computer/${id}`)
+                .then(response => response.json())
+                .then(computer => {
+                    document.getElementById('computerId').value = computer.id;
+                    document.getElementById('computerSubnet').value = computer.subnet;
+                    document.getElementById('computerName').value = computer.name;
+                    document.getElementById('computerIp').value = computer.ip_address;
+                    document.getElementById('computerOs').value = computer.os;
+                    document.getElementById('computerRoom').value = computer.room;
+                    document.getElementById('computerUser').value = computer.user;
+                    
+                    // Генерируем список IP адресов для автозаполнения
+                    generateIpList(computer.subnet);
+                    
+                    computerModal.show();
+                });
+        }
+
+        function deleteComputer(id, subnet) {
+            if (confirm('Вы уверены, что хотите удалить этот компьютер?')) {
+                fetch(`/api/computer/${id}`, { method: 'DELETE' })
+                    .then(response => response.json())
+                    .then(() => loadComputers(subnet));
+            }
+        }
+
+        function validateIpAddress(ip, subnet) {
+            const subnetPart = subnet === '192.186.0.1' ? '0' : '1';
+            const regex = new RegExp(`^192\\.186\\.${subnetPart}\\.([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$`);
+            return regex.test(ip);
+        }
+
+        function saveComputer() {
+            const form = document.getElementById('computerForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const id = document.getElementById('computerId').value;
+            const subnet = document.getElementById('computerSubnet').value;
+            const ip = document.getElementById('computerIp').value;
+
+            if (!validateIpAddress(ip, subnet)) {
+                alert('Неверный формат IP адреса для данной подсети');
+                return;
+            }
+
+            const data = {
+                name: document.getElementById('computerName').value,
+                ip_address: ip,
+                os: document.getElementById('computerOs').value,
+                room: document.getElementById('computerRoom').value,
+                user: document.getElementById('computerUser').value,
+                subnet: subnet
+            };
+            
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/computer/${id}` : '/api/computer';
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(() => {
+                computerModal.hide();
+                loadComputers(data.subnet);
+            })
+            .catch(error => {
+                alert('Ошибка при сохранении: ' + error.message);
+            });
+        }
+
+        // Chat functionality
+        function addMessageToChat(role, message, image = null) {
+            const chatMessages = document.querySelector('.chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}-message`;
+            
+            if (message) {
+                messageDiv.textContent = message;
+            }
+            
+            if (image) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(image);
+                messageDiv.appendChild(img);
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const chatMessages = document.querySelector('.chat-messages');
+            const indicator = document.createElement('div');
+            indicator.className = 'typing-indicator';
+            indicator.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatMessages.appendChild(indicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return indicator;
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.querySelector('.chat-messages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatForm = document.getElementById('chat-form');
+            const chatMessages = document.querySelector('.chat-messages');
+            
+            if (chatForm) {
+                chatForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const messageInput = document.getElementById('user-input');
+                    const imageInput = document.getElementById('image-upload');
+                    const message = messageInput.value.trim();
+                    
+                    if (!message && !imageInput.files[0]) return;
+                    
+                    const formData = new FormData();
+                    formData.append('message', message);
+                    if (imageInput.files[0]) {
+                        formData.append('image', imageInput.files[0]);
+                    }
+                    
+                    // Add user message to chat
+                    addMessageToChat('user', message, imageInput.files[0]);
+                    
+                    // Clear inputs
+                    messageInput.value = '';
+                    imageInput.value = '';
+                    
+                    // Show typing indicator
+                    const typingIndicator = addTypingIndicator();
+                    
+                    try {
+                        const response = await fetch('/api/chat', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const data = await response.json();
+                        
+                        // Remove typing indicator
+                        typingIndicator.remove();
+                        
+                        if (data.error) {
+                            addMessageToChat('assistant', `Ошибка: ${data.error}`);
+                        } else {
+                            addMessageToChat('assistant', data.response);
+                            if (data.image_path) {
+                                const img = document.createElement('img');
+                                img.src = data.image_path;
+                                img.style.maxWidth = '200px';
+                                img.style.margin = '10px 0';
+                                document.querySelector('.message:last-child').appendChild(img);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        typingIndicator.remove();
+                        addMessageToChat('assistant', 'Произошла ошибка при отправке сообщения');
+                    }
+                    
+                    // Scroll to bottom
+                    scrollToBottom();
+                });
+            }
+
+            // Load chat history
+            fetch('/api/chat/history')
+                .then(response => response.json())
+                .then(history => {
+                    history.reverse().forEach(item => {
+                        addMessageToChat('user', item.message);
+                        addMessageToChat('assistant', item.response);
+                        if (item.image_path) {
+                            const img = document.createElement('img');
+                            img.src = item.image_path;
+                            img.style.maxWidth = '200px';
+                            img.style.margin = '10px 0';
+                            document.querySelector('.message:last-child').appendChild(img);
+                        }
+                    });
+                    scrollToBottom();
+                });
+        });
+
+        // Pixels tab functionality
+        document.getElementById('image-gen-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const prompt = document.getElementById('prompt').value;
+            const style = document.getElementById('style').value;
+            const generateBtn = document.getElementById('generate-btn');
+            const spinner = generateBtn.querySelector('.spinner-border');
+            const loadingPlaceholder = document.getElementById('loading-placeholder');
+            const generatedImage = document.getElementById('generated-image');
+            
+            // Show loading state
+            generateBtn.disabled = true;
+            spinner.classList.remove('d-none');
+            loadingPlaceholder.classList.remove('d-none');
+            generatedImage.classList.add('d-none');
+            
+            try {
+                const response = await fetch('/api/generate-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        style: style
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Display the generated image
+                generatedImage.src = data.image_url;
+                generatedImage.classList.remove('d-none');
+            } catch (error) {
+                alert('Ошибка при генерации изображения: ' + error.message);
+            } finally {
+                // Hide loading state
+                generateBtn.disabled = false;
+                spinner.classList.add('d-none');
+                loadingPlaceholder.classList.add('d-none');
+            }
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch((err) => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+        
+        // Add to Home Screen prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button or notification
+            const installButton = document.createElement('button');
+            installButton.className = 'btn btn-success position-fixed bottom-0 end-0 m-3';
+            installButton.innerHTML = '<i class="fas fa-download"></i> Установить приложение';
+            installButton.addEventListener('click', (e) => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    }
+                    deferredPrompt = null;
+                    installButton.remove();
+                });
+            });
+            document.body.appendChild(installButton);
+        });
+    </script>
+</body>
+</html> 
